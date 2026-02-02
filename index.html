@@ -1,0 +1,730 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PermiAI — SLO County Pilot (Demo)</title>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --panel:#0f172a;
+      --card:#111c33;
+      --border:rgba(255,255,255,.08);
+      --text:rgba(255,255,255,.92);
+      --muted:rgba(255,255,255,.65);
+      --muted2:rgba(255,255,255,.48);
+      --primary:#3b82f6;
+      --danger:#ef4444;
+      --warn:#f59e0b;
+      --ok:#22c55e;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background: radial-gradient(1200px 600px at 30% 0%, #172554 0%, var(--bg) 40%, #070b14 100%);
+      color:var(--text);
+    }
+    a{color:inherit}
+    .app{
+      display:grid;
+      grid-template-columns: 260px 1fr;
+      min-height:100vh;
+    }
+    .sidebar{
+      border-right:1px solid var(--border);
+      padding:18px 14px;
+      background: rgba(15,23,42,.55);
+      backdrop-filter: blur(10px);
+    }
+    .brand{
+      padding:10px 10px 16px 10px;
+      border-bottom:1px solid var(--border);
+      margin-bottom:14px;
+    }
+    .brand h1{
+      font-size:18px; margin:0 0 4px 0; letter-spacing:.2px;
+    }
+    .brand p{
+      margin:0; color:var(--muted); font-size:12px;
+    }
+    .nav{
+      display:flex; flex-direction:column; gap:6px; padding:6px;
+    }
+    .nav button{
+      width:100%;
+      text-align:left;
+      background:transparent;
+      border:1px solid transparent;
+      color:var(--muted);
+      padding:10px 10px;
+      border-radius:10px;
+      cursor:pointer;
+      font-size:13px;
+    }
+    .nav button.active{
+      background: rgba(59,130,246,.14);
+      border-color: rgba(59,130,246,.28);
+      color:var(--text);
+    }
+    .nav button:hover{
+      border-color: var(--border);
+      color:var(--text);
+    }
+
+    .main{
+      display:flex;
+      flex-direction:column;
+    }
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:14px 18px;
+      border-bottom:1px solid var(--border);
+      background: rgba(15,23,42,.4);
+      backdrop-filter: blur(10px);
+    }
+    .search{
+      display:flex; align-items:center; gap:10px;
+      width:min(560px, 70%);
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background: rgba(17,28,51,.55);
+      color:var(--muted);
+      font-size:13px;
+    }
+    .chip{
+      border:1px solid var(--border);
+      padding:8px 10px;
+      border-radius:999px;
+      font-size:12px;
+      color:var(--muted);
+      background: rgba(17,28,51,.55);
+    }
+    .content{
+      padding:22px 22px 40px;
+      max-width:1100px;
+    }
+    h2{margin:0 0 6px 0; font-size:26px}
+    .sub{color:var(--muted); margin:0 0 18px 0; font-size:13px; line-height:1.4}
+    .row{display:grid; grid-template-columns: 1fr 1fr; gap:16px}
+    .card{
+      background: rgba(17,28,51,.55);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:16px;
+    }
+    .card h3{margin:0 0 10px 0; font-size:14px; color:var(--text); letter-spacing:.2px}
+    .muted{color:var(--muted)}
+    .muted2{color:var(--muted2)}
+    .btns{display:flex; gap:10px; justify-content:flex-end; margin-top:14px}
+    .btn{
+      border:1px solid var(--border);
+      background: rgba(17,28,51,.7);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      font-size:13px;
+    }
+    .btn.primary{
+      background: rgba(59,130,246,.95);
+      border-color: rgba(59,130,246,.95);
+      color:#061225;
+      font-weight:600;
+    }
+    .btn:disabled{
+      opacity:.55; cursor:not-allowed;
+    }
+    .list{display:flex; flex-direction:column; gap:10px}
+    .item{
+      border:1px solid var(--border);
+      background: rgba(15,23,42,.35);
+      padding:12px;
+      border-radius:14px;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:flex-start;
+    }
+    .tag{
+      font-size:11px;
+      padding:4px 8px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      color:var(--muted);
+      background: rgba(0,0,0,.12);
+      white-space:nowrap;
+    }
+    .tag.danger{border-color:rgba(239,68,68,.5); color:#fecaca; background:rgba(239,68,68,.12)}
+    .tag.ok{border-color:rgba(34,197,94,.5); color:#bbf7d0; background:rgba(34,197,94,.12)}
+    .tag.warn{border-color:rgba(245,158,11,.5); color:#fde68a; background:rgba(245,158,11,.12)}
+
+    .stepper{
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+      margin: 6px 0 16px 0;
+      color:var(--muted2);
+      font-size:12px;
+    }
+    .step{
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background: rgba(17,28,51,.35);
+    }
+    .step.active{
+      color:var(--text);
+      border-color: rgba(59,130,246,.35);
+      background: rgba(59,130,246,.12);
+    }
+
+    .drop{
+      border:1px dashed rgba(255,255,255,.18);
+      border-radius:16px;
+      padding:18px;
+      background: rgba(15,23,42,.25);
+    }
+    .grid2{display:grid; grid-template-columns: 1.2fr .8fr; gap:16px}
+    .field{display:flex; flex-direction:column; gap:6px; margin-bottom:12px}
+    label{font-size:12px; color:var(--muted)}
+    input, select{
+      width:100%;
+      background: rgba(17,28,51,.55);
+      border:1px solid var(--border);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      font-size:13px;
+      outline:none;
+    }
+    .checks{display:flex; flex-direction:column; gap:10px}
+    .checkrow{display:flex; gap:10px; align-items:flex-start}
+    .checkrow input{width:auto; margin-top:2px}
+    .kpi{display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; margin-top:10px}
+    .kpi .card{padding:12px}
+    .kpi .val{font-size:22px; font-weight:700; margin-top:6px}
+    .tabs{display:flex; gap:8px; margin:12px 0 0 0; flex-wrap:wrap}
+    .tab{
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background: rgba(17,28,51,.35);
+      color:var(--muted);
+      cursor:pointer;
+      font-size:12px;
+    }
+    .tab.active{
+      color:var(--text);
+      border-color: rgba(59,130,246,.35);
+      background: rgba(59,130,246,.12);
+    }
+    .issue{
+      border:1px solid var(--border);
+      background: rgba(15,23,42,.25);
+      border-radius:16px;
+      padding:14px;
+      margin-top:12px;
+    }
+    .issue h4{margin:0 0 6px 0; font-size:14px}
+    .issue p{margin:6px 0; color:var(--muted); font-size:13px; line-height:1.4}
+    .twoCol{
+      display:grid; grid-template-columns: 1fr 1fr; gap:14px;
+    }
+    .small{font-size:12px; color:var(--muted2)}
+    .footerNote{margin-top:10px; font-size:12px; color:var(--muted2)}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <h1>PermiAI</h1>
+        <p>SLO County Pilot</p>
+      </div>
+      <div class="nav">
+        <button class="active" data-go="dashboard">Dashboard</button>
+        <button data-go="upload">Submissions</button>
+        <button data-go="report">Validation Reports</button>
+        <button data-go="configure">Jurisdictions</button>
+        <button data-go="dashboard">Knowledge Base</button>
+        <button data-go="dashboard">Settings</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="search">Search submissions, report IDs, addresses…</div>
+        <div class="chip">Plan Checker (SLO County)</div>
+      </div>
+
+      <div class="content">
+        <section id="screen-dashboard">
+          <h2>Dashboard</h2>
+          <p class="sub">Validate intake completeness and consistency before plan review begins.</p>
+
+          <div class="row">
+            <div class="card">
+              <h3>Pre-Submission Validation</h3>
+              <p class="muted">Run checks for completeness, cross-document consistency, and revision integrity. Output includes evidence and sources.</p>
+              <div class="btns">
+                <button class="btn primary" id="btn-new">New Validation</button>
+              </div>
+            </div>
+
+            <div class="card">
+              <h3>Today</h3>
+              <div class="list">
+                <div class="item">
+                  <div>
+                    <div class="muted2 small">Submissions validated</div>
+                    <div class="val" style="font-size:22px;font-weight:700;margin-top:4px;">3</div>
+                  </div>
+                  <span class="tag">This week</span>
+                </div>
+                <div class="item">
+                  <div>
+                    <div class="muted2 small">Avg review-readiness</div>
+                    <div class="val" style="font-size:22px;font-weight:700;margin-top:4px;">68</div>
+                  </div>
+                  <span class="tag">Pilot</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:16px;">
+            <h3>Recent Activity</h3>
+            <div class="list">
+              <div class="item">
+                <div>
+                  <div><strong>SLO-VAL-2026-0193</strong> — 742 Palm St, San Luis Obispo</div>
+                  <div class="small">Residential Remodel • Uploaded Jan 25, 2026 4:12 PM</div>
+                </div>
+                <span class="tag danger">Not Ready</span>
+              </div>
+              <div class="item">
+                <div>
+                  <div><strong>SLO-VAL-2026-0184</strong> — 1150 Broad St</div>
+                  <div class="small">Tenant Improvement • Uploaded Jan 24, 2026 11:03 AM</div>
+                </div>
+                <span class="tag ok">Ready</span>
+              </div>
+              <div class="item">
+                <div>
+                  <div><strong>SLO-VAL-2026-0179</strong> — 2030 Johnson Ave</div>
+                  <div class="small">Residential • Uploaded Jan 23, 2026 2:44 PM</div>
+                </div>
+                <span class="tag danger">Not Ready</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="screen-upload" style="display:none;">
+          <h2>Upload Submission Package</h2>
+          <p class="sub">Upload the plan set and intake documents. PermiAI will validate completeness, consistency, and revision integrity.</p>
+
+          <div class="stepper">
+            <span class="step active">Upload</span>
+            <span class="step">Configure</span>
+            <span class="step">Validate</span>
+            <span class="step">Report</span>
+          </div>
+
+          <div class="grid2">
+            <div class="card">
+              <h3>Files</h3>
+              <div class="drop">
+                <div style="font-weight:600;">Drag and drop files here</div>
+                <div class="small">Accepted: PDF, ZIP, DOCX (BIM support later)</div>
+              </div>
+              <div style="height:12px;"></div>
+              <div class="list" id="file-list">
+                <div class="item"><div>PlanSet_RevC_01-25-2026.pdf</div><span class="tag">PDF</span></div>
+                <div class="item"><div>Permit_Application_Form.pdf</div><span class="tag">PDF</span></div>
+                <div class="item"><div>Site_Plan.pdf</div><span class="tag">PDF</span></div>
+                <div class="item"><div>Title24_Energy_Compliance.pdf</div><span class="tag">PDF</span></div>
+                <div class="item"><div>Stormwater_Form.pdf</div><span class="tag">PDF</span></div>
+                <div class="item"><div>CalFire_Clearance.pdf</div><span class="tag">PDF</span></div>
+              </div>
+
+              <div class="btns">
+                <button class="btn" data-go="dashboard">Back</button>
+                <button class="btn primary" id="btn-to-config">Continue</button>
+              </div>
+            </div>
+
+            <div class="card">
+              <h3>Submission Metadata (Auto-detected)</h3>
+              <div class="list">
+                <div class="item"><div><div class="small">Address</div>742 Palm St, San Luis Obispo, CA</div></div>
+                <div class="item"><div><div class="small">APN</div>053-112-019</div></div>
+                <div class="item"><div><div class="small">Applicant</div>Palm Street Holdings LLC</div></div>
+                <div class="item"><div><div class="small">Project Type (guess)</div>Residential Remodel</div></div>
+              </div>
+              <div class="footerNote">All findings in the report include sources (checklist items, code citations, or extracted evidence).</div>
+            </div>
+          </div>
+        </section>
+
+        <section id="screen-configure" style="display:none;">
+          <h2>Configure Validation</h2>
+          <p class="sub">Select jurisdiction and code edition. Checks and citations are applied based on these settings.</p>
+
+          <div class="stepper">
+            <span class="step">Upload</span>
+            <span class="step active">Configure</span>
+            <span class="step">Validate</span>
+            <span class="step">Report</span>
+          </div>
+
+          <div class="grid2">
+            <div class="card">
+              <h3>Project and Jurisdiction</h3>
+
+              <div class="field">
+                <label>Jurisdiction</label>
+                <select>
+                  <option>San Luis Obispo County (Pilot)</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label>City / Area</label>
+                <select>
+                  <option>City of San Luis Obispo</option>
+                  <option>Unincorporated County Area</option>
+                  <option>Atascadero</option>
+                  <option>Paso Robles</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label>Project Type</label>
+                <select>
+                  <option>Residential Remodel</option>
+                  <option>Residential (New)</option>
+                  <option>ADU</option>
+                  <option>Commercial</option>
+                  <option>Tenant Improvement</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label>Submission Date</label>
+                <input value="2026-01-25" />
+              </div>
+
+              <div class="field">
+                <label>Code Edition</label>
+                <select>
+                  <option>2022 CBC / CRC / CFC / CALGreen</option>
+                  <option>2025 (coming soon)</option>
+                </select>
+              </div>
+
+              <div class="footerNote">PermiAI applies local amendments when available for the selected jurisdiction.</div>
+            </div>
+
+            <div class="card">
+              <h3>Validation Checks</h3>
+              <div class="checks">
+                <div class="checkrow">
+                  <input type="checkbox" checked />
+                  <div>
+                    <div style="font-weight:600;">Completeness check</div>
+                    <div class="small">Validate required intake documents are present</div>
+                  </div>
+                </div>
+                <div class="checkrow">
+                  <input type="checkbox" checked />
+                  <div>
+                    <div style="font-weight:600;">Cross-document consistency</div>
+                    <div class="small">Detect mismatched address, scope, occupancy, and metadata</div>
+                  </div>
+                </div>
+                <div class="checkrow">
+                  <input type="checkbox" checked />
+                  <div>
+                    <div style="font-weight:600;">Revision integrity check</div>
+                    <div class="small">Detect mixed revisions or outdated plan sheets</div>
+                  </div>
+                </div>
+                <div class="checkrow">
+                  <input type="checkbox" checked />
+                  <div>
+                    <div style="font-weight:600;">Review-readiness scoring</div>
+                    <div class="small">Assess plan organization and navigability</div>
+                  </div>
+                </div>
+              </div>
+
+              <div style="height:10px;"></div>
+              <div class="field">
+                <label>Output style</label>
+                <select>
+                  <option>Reviewer report (recommended)</option>
+                  <option>Applicant-friendly report</option>
+                </select>
+              </div>
+
+              <div class="btns">
+                <button class="btn" data-go="upload">Back</button>
+                <button class="btn primary" id="btn-run">Run Validation</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="screen-validating" style="display:none;">
+          <h2>Running Validation</h2>
+          <p class="sub">Generating reviewer report. This is a demo simulation of the workflow.</p>
+
+          <div class="stepper">
+            <span class="step">Upload</span>
+            <span class="step">Configure</span>
+            <span class="step active">Validate</span>
+            <span class="step">Report</span>
+          </div>
+
+          <div class="card">
+            <h3>Progress</h3>
+            <div class="muted2 small" id="progressText">Extracting submission metadata…</div>
+            <div style="height:10px;"></div>
+            <div style="border:1px solid var(--border); border-radius:999px; overflow:hidden; background: rgba(17,28,51,.35);">
+              <div id="bar" style="height:14px; width:10%; background: rgba(59,130,246,.9);"></div>
+            </div>
+
+            <div style="height:14px;"></div>
+            <div class="list" id="progressList">
+              <div class="item"><div>Extracting submission metadata</div><span class="tag">Running</span></div>
+              <div class="item"><div>Matching SLO intake checklist</div><span class="tag">Queued</span></div>
+              <div class="item"><div>Checking cross-document consistency</div><span class="tag">Queued</span></div>
+              <div class="item"><div>Checking plan revision integrity</div><span class="tag">Queued</span></div>
+              <div class="item"><div>Generating findings and citations</div><span class="tag">Queued</span></div>
+            </div>
+
+            <div class="footerNote">All findings include sources (code sections, checklist items, or extracted evidence).</div>
+          </div>
+        </section>
+
+        <!-- REPORT -->
+        <section id="screen-report" style="display:none;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:14px; flex-wrap:wrap;">
+            <div>
+              <h2>Validation Report</h2>
+              <div class="muted2 small">
+                Report ID: <strong>SLO-VAL-2026-0193</strong> • Jurisdiction: SLO County (Pilot) • Address: 742 Palm St, San Luis Obispo, CA
+              </div>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <span class="tag danger">Not Ready for Submission</span>
+              <button class="btn" id="btn-share">Share</button>
+              <button class="btn primary" id="btn-export">Export Report</button>
+            </div>
+          </div>
+
+          <div class="tabs">
+            <button class="tab active" data-tab="overview">Overview</button>
+            <button class="tab" data-tab="issues">Issues</button>
+            <button class="tab" data-tab="checklist">Checklist</button>
+            <button class="tab" data-tab="evidence">Evidence</button>
+            <button class="tab" data-tab="audit">Audit Trail</button>
+          </div>
+
+          <div class="kpi">
+            <div class="card">
+              <div class="muted2 small">Missing required items</div>
+              <div class="val">3</div>
+            </div>
+            <div class="card">
+              <div class="muted2 small">Consistency issues</div>
+              <div class="val">2</div>
+            </div>
+            <div class="card">
+              <div class="muted2 small">Revision conflicts</div>
+              <div class="val">1</div>
+            </div>
+            <div class="card">
+              <div class="muted2 small">Review-readiness</div>
+              <div class="val">63</div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:14px;">
+            <h3>Summary</h3>
+            <p class="muted">This submission package has avoidable intake deficiencies likely to trigger a clarification cycle. The highest-risk issues are missing required documentation and a detected revision mismatch within the plan set.</p>
+          </div>
+
+          <div class="issue">
+            <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+              <h4>Address mismatch across package</h4>
+              <span class="tag danger">High</span>
+            </div>
+            <p><strong>Detected:</strong> Permit_Application_Form.pdf shows “742 Palm St”; PlanSet_RevC_01-25-2026.pdf cover sheet shows “740 Palm Street”.</p>
+            <p><strong>Why it matters:</strong> Mismatched address typically triggers intake hold and clarification request.</p>
+            <p><strong>Suggested fix:</strong> Confirm correct address and update the plan cover sheet or application form so they match.</p>
+            <p><strong>Source:</strong> Consistency rule (address must match across intake documents) + extracted evidence lines.</p>
+          </div>
+
+          <div class="issue">
+            <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+              <h4>Mixed plan revisions (RevB and RevC detected)</h4>
+              <span class="tag danger">High</span>
+            </div>
+            <p><strong>Evidence:</strong> Sheet A2.1 footer shows RevB; Sheet A0.1 footer shows RevC.</p>
+            <p><strong>Why it matters:</strong> Mixed revisions can lead to review errors and clarification cycles.</p>
+            <p><strong>Suggested fix:</strong> Re-export plan set so all sheets share a single revision.</p>
+            <p><strong>Source:</strong> Reviewer integrity rule (no mixed revision sheets).</p>
+          </div>
+
+          <div class="issue">
+            <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+              <h4>Missing waste management / CALGreen declaration</h4>
+              <span class="tag warn">Medium</span>
+            </div>
+            <p><strong>Why it matters:</strong> Intake requires documentation supporting applicable CALGreen and waste diversion requirements.</p>
+            <p><strong>Suggested fix:</strong> Attach completed CALGreen form and waste diversion plan for project scope.</p>
+            <p><strong>Source:</strong> CALGreen (2022) + local intake requirement reference.</p>
+          </div>
+        </section>
+
+        <!-- EXPORT -->
+        <section id="screen-export" style="display:none;">
+          <h2>Export Validation Report</h2>
+          <p class="sub">Generate a PDF or share link for the applicant. This demo simulates exporting.</p>
+
+          <div class="card">
+            <h3>Export Options</h3>
+            <div class="twoCol">
+              <div class="field">
+                <label>Export format</label>
+                <select>
+                  <option>PDF</option>
+                  <option>Share link (internal)</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Audience</label>
+                <select>
+                  <option>Reviewer version (default)</option>
+                  <option>Applicant-friendly</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Recipient email</label>
+              <input value="applicant@palmstreetholdings.com" />
+            </div>
+
+            <div class="field">
+              <label>Message</label>
+              <input value="Your submission package has avoidable intake deficiencies. Please address the flagged items and resubmit a corrected package to reduce review delays." />
+            </div>
+
+            <div class="btns">
+              <button class="btn" data-go="report">Back to report</button>
+              <button class="btn primary" id="btn-generate">Generate PDF</button>
+            </div>
+
+            <div class="footerNote" id="exportNote" style="display:none;">Demo: PDF generated. (In a real MVP this would download or attach to the record.)</div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const screens = {
+      dashboard: document.getElementById('screen-dashboard'),
+      upload: document.getElementById('screen-upload'),
+      configure: document.getElementById('screen-configure'),
+      validating: document.getElementById('screen-validating'),
+      report: document.getElementById('screen-report'),
+      export: document.getElementById('screen-export'),
+    };
+
+    function show(name){
+      Object.values(screens).forEach(s => s.style.display = 'none');
+      screens[name].style.display = 'block';
+
+      document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+      const nav = document.querySelector(`.nav button[data-go="${name}"]`);
+      if(nav) nav.classList.add('active');
+    }
+
+    document.getElementById('btn-new').addEventListener('click', () => show('upload'));
+    document.getElementById('btn-to-config').addEventListener('click', () => show('configure'));
+
+    document.querySelectorAll('[data-go]').forEach(el=>{
+      el.addEventListener('click', () => {
+        const dest = el.getAttribute('data-go');
+        if (dest && screens[dest]) show(dest);
+      });
+    });
+
+    const progressText = document.getElementById('progressText');
+    const bar = document.getElementById('bar');
+    const progressList = document.getElementById('progressList');
+
+    function runValidation(){
+      show('validating');
+
+      const steps = [
+        {text:'Extracting submission metadata…', pct:18},
+        {text:'Matching SLO intake checklist…', pct:38},
+        {text:'Checking cross-document consistency…', pct:58},
+        {text:'Checking plan revision integrity…', pct:76},
+        {text:'Generating findings and citations…', pct:92},
+        {text:'Finalizing report…', pct:100},
+      ];
+
+      let i = 0;
+
+      const tags = progressList.querySelectorAll('.tag');
+      tags.forEach((t, idx) => t.textContent = idx === 0 ? 'Running' : 'Queued');
+
+      const timer = setInterval(() => {
+        const s = steps[i];
+        progressText.textContent = s.text;
+        bar.style.width = s.pct + '%';
+
+
+        const items = progressList.querySelectorAll('.item');
+        items.forEach((it, idx) => {
+          const tag = it.querySelector('.tag');
+          if (!tag) return;
+          if (idx < i) tag.textContent = 'Done';
+          else if (idx === i) tag.textContent = 'Running';
+          else tag.textContent = 'Queued';
+        });
+
+        i++;
+        if (i >= steps.length){
+          clearInterval(timer);
+          setTimeout(() => show('report'), 500);
+        }
+      }, 650);
+    }
+
+    document.getElementById('btn-run').addEventListener('click', runValidation);
+
+    document.getElementById('btn-export').addEventListener('click', () => show('export'));
+
+    document.getElementById('btn-generate').addEventListener('click', () => {
+      document.getElementById('exportNote').style.display = 'block';
+    });
+
+    document.querySelectorAll('.tab').forEach(t => {
+      t.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+        t.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

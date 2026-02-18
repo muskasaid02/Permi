@@ -9,6 +9,7 @@ from PIL import Image
 from dotenv import load_dotenv
 import io
 from openai import OpenAI
+from pathlib import Path
 
 # Load environment variables from .env file
 load_dotenv()
@@ -207,7 +208,11 @@ def process_cover_sheet_ocr(pdf_path):
     }
     
     # Save to file
-    output_path = "extraction_output.json"
+    parent_dir = Path(__file__).parent.parent
+    outputs_dir = parent_dir / "outputs"
+    outputs_dir.mkdir(exist_ok=True)
+
+    output_path = outputs_dir / "extraction_output.json"
     with open(output_path, "w") as f:
         json.dump(final_json, f, indent=2)
     
